@@ -9,7 +9,10 @@
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-        <div class="container is-fluid" >
+    <nav class="nav">
+        
+    </nav>
+        <div class="container " >
 
             <div class="columns">
                 <div class="column">
@@ -20,7 +23,7 @@
                 </div>
             </div>
             <div class="columns">
-                <div class="column has-text-centered" id="takePictureBtn"><button class="button is-primary is-inverted">Take Picture</button></div>
+                <div class="column" ><button class="button is-primary is-inverted" id="initApp">Start Video</button>&nbsp;<button class="button is-primary is-inverted" id="takePictureBtn">Take Picture</button></div>
                 <div class="column"></div>
                 <div class="column"></div>
             </div>
@@ -38,7 +41,6 @@
                         <div class="select is-large">
                           <select id="deviceSelector">
                             <option selected value="0">Camera</option>
-                           
                           </select>
                         </div>
                         <span class="icon is-large is-left">
@@ -56,7 +58,7 @@
             let video = document.getElementsByTagName("video")[0];
             // app(canvas,video).playVideo('video/sv2.mp4')
             let myApp = app(canvas,video);
-            // myApp.chooseDevice();
+            initApp.onclick =  myApp.chooseDevice;
             
             
 
