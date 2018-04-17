@@ -19,10 +19,32 @@
                 </div>
             </div>
         </div>
+
+         <!-- modals... etc. -->
+         <div class="modal" id="modal">
+                <div class="modal-background"></div>
+                <div class="modal-content">
+                  <!-- Any other Bulma elements you want -->
+                  <div class="control has-icons-left">
+                        <div class="select is-large">
+                          <select id="deviceSelector">
+                            <option selected value="0">Camera</option>
+                           
+                          </select>
+                        </div>
+                        <span class="icon is-large is-left">
+                          <i class="fas fa-globe"></i>
+                        </span>
+                      </div>
+                </div>
+                <button class="modal-close is-large" aria-label="close" onclick="this.parentElement.classList.remove('is-large')"></button>
+              </div>
         <script src="js/main.js"></script>
         <script>
-        // app().streamVideo();
-        app().playVideo('video/sampleVideo.mp4');
+            let canvas = document.getElementsByTagName("canvas")[0];
+            let video = document.getElementsByTagName("video")[0];
+            app().chooseDevice();
+        // app().playVideo('video/sv2.mp4');
         </script>
 </body>
 </html>

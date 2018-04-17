@@ -14,6 +14,10 @@ const app = function() {
       streamVideoToCanvas(video);
     }; //resume streaming on play button after pause
 
+    deviceSelector.onchange = (e)=>{
+        streamVideo(e.target.value);
+        toggleModal('hide')
+    }
   }
 
   function playVideo(video_src){
@@ -23,17 +27,51 @@ const app = function() {
   }
 
 
-  function streamVideo() {
-    navigator.mediaDevices
-    .getUserMedia({ video: true })
-    .then((stream)=>{
+  function chooseDevice() {
+    navigator.mediaDevices.enumerateDevices().then(
+      d => {
+          videoInputs = d.filter(mediaDevice => {
+            console.log(mediaDevice)
+            return mediaDevice.kind == "videoinput";
+          });
+        switch (videoInputs.length) {
+          case 0:
+            return alert("You seem to not have an input device");
+            break;
+          case 1:
+            return streamVideo();
+            break;
+          case 2:
+            toggleModal("show");
+            deviceSelector.innerHTML += ` <option value="${videoInputs[0].deviceId}" >${videoInputs[0].label}</option>
+            <option value="${videoInputs[1].deviceId}" >${videoInputs[1].label}</option>`
+            break;
+        }
+      },
+      e => console.log("error :", e)
+    );
+  }
+
+
+function streamVideo(deviceId) {
+    navigator.mediaDevices.getUserMedia({ video: {deviceId:deviceId ? {exact:deviceId}:undefined} }).then(
+      stream => {
         video.srcObject = stream;
         video.play();
-    }, err => {
-      alert("error");
-      console.log(error);
-    });
-    
+      },
+      err => {
+        alert("error");
+        console.log(error);
+      }
+    );
+  }
+
+  function toggleModal(s) {
+    if (s.trim().toLowerCase() == "show") {
+      document.getElementById("modal").classList.add("is-active");
+    } else {
+      document.getElementById("modal").classList.remove("is-active");
+    }
   }
 
   function streamVideoToCanvas(videoEl) {
@@ -48,5 +86,5 @@ const app = function() {
 
   init();
 
-  return { init,playVideo,streamVideo };
+  return { init,playVideo,streamVideo, chooseDevice };
 };
