@@ -1,31 +1,34 @@
-const app = function() {
-  let canvas = document.getElementsByTagName("canvas")[0];
-  let video = document.getElementsByTagName("video")[0];
+const app = function(canvas, video) {
+  let ctracker = new clm.tracker();
+  ctracker.init();
+
   let c = canvas.getContext("2d");
 
   function init() {
-      //set event listeners
+    //set event listeners
     video.onloadedmetadata = () => {
-      //dimensions
-      canvas.width = video.offsetWidth;
-      canvas.height = video.offsetHeight;
+      video.width = canvas.width = video.offsetWidth;
+      video.height = canvas.height = video.offsetHeight;
+      ctracker.init();
+      ctracker.start(video);
     };
     video.onplay = () => {
-      streamVideoToCanvas(video);
+      streamVideoToCanvas(video, ctracker);
     }; //resume streaming on play button after pause
 
-    deviceSelector.onchange = (e)=>{
-        streamVideo(e.target.value);
+    deviceSelector.onchange = (event)=>{
         toggleModal('hide')
+        streamVideo(event.target.value);
     }
   }
 
-  function playVideo(video_src){
-      if(!video_src){return alert('No source Specified');}
+  function playVideo(video_src) {
+    if (!video_src) {
+      return alert("No source Specified");
+    }
     video.src = video_src;
     video.play();
   }
-
 
   function chooseDevice() {
     navigator.mediaDevices.enumerateDevices().then(
@@ -52,8 +55,7 @@ const app = function() {
     );
   }
 
-
-function streamVideo(deviceId) {
+  function streamVideo(deviceId) {
     navigator.mediaDevices.getUserMedia({ video: {deviceId:deviceId ? {exact:deviceId}:undefined} }).then(
       stream => {
         video.srcObject = stream;
@@ -74,17 +76,30 @@ function streamVideo(deviceId) {
     }
   }
 
-  function streamVideoToCanvas(videoEl) {
+  function streamVideoToCanvas(videoEl, ctracker) {
+    let positions = ctracker.getCurrentPosition();
+    c.clearRect(0, 0, canvas.width, canvas.height);
     c.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
+    ctracker.draw(canvas);
     //similar to using setTimeOut
     if (!video.paused)
       requestAnimationFrame(t => {
-        // console.log(t);
-        streamVideoToCanvas(videoEl);
+        console.log(t);
+        streamVideoToCanvas(videoEl, ctracker);
       });
   }
 
   init();
 
-  return { init,playVideo,streamVideo, chooseDevice };
+  function drawFaceTracking(ctracker) {
+    if (!video.paused) {
+      requestAnimationFrame(drawLoop);
+      let positions = ctracker.getCurrentPosition();
+      c.clearRect(0, 0, canvas.width, canvas.height);
+      c.drawImage(video, 0, 0, canvas.width, canvas.height);
+      ctracker.draw(canvas);
+    }
+  }
+
+  return { init, playVideo, streamVideo, chooseDevice };
 };
