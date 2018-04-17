@@ -4,6 +4,15 @@ const app = function(canvas, video) {
 
   let c = canvas.getContext("2d");
 
+//   https://stackoverflow.com/a/17386803/7314900
+  function isCanvasBlank(canvas) {
+    var blank = document.createElement('canvas');
+    blank.width = canvas.width;
+    blank.height = canvas.height;
+
+    return canvas.toDataURL() == blank.toDataURL();
+}
+
   function init() {
     //set event listeners
     video.onloadedmetadata = () => {
@@ -19,6 +28,14 @@ const app = function(canvas, video) {
     deviceSelector.onchange = (event)=>{
         toggleModal('hide')
         streamVideo(event.target.value);
+    }
+
+    takePictureBtn.onclick = ()=>{
+        if(isCanvasBlank(canvas)){
+            console.log('canvas empty')
+            return false;
+        }
+        takePicture();
     }
   }
 
@@ -84,7 +101,7 @@ const app = function(canvas, video) {
     //similar to using setTimeOut
     if (!video.paused)
       requestAnimationFrame(t => {
-        console.log(t);
+        // console.log(t);
         streamVideoToCanvas(videoEl, ctracker);
       });
   }
@@ -101,5 +118,13 @@ const app = function(canvas, video) {
     }
   }
 
-  return { init, playVideo, streamVideo, chooseDevice };
+  function takePicture(){
+      let a = document.createElement('a');
+      a.setAttribute('href',canvas.toDataURL('image/png'));
+      a.setAttribute('download','picture'+Date.now()+'.png');
+      a.click();
+
+  }
+
+  return { init, playVideo, streamVideo, chooseDevice, takePicture };
 };

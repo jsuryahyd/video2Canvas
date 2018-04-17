@@ -19,7 +19,15 @@
                     <canvas id="canvasOuput" ></canvas>
                 </div>
             </div>
+            <div class="columns">
+                <div class="column has-text-centered" id="takePictureBtn"><button class="button is-primary is-inverted">Take Picture</button></div>
+                <div class="column"></div>
+                <div class="column"></div>
+            </div>
         </div>
+
+
+
 
         <!-- modals... etc. -->
         <div class="modal" id="modal">
@@ -47,7 +55,8 @@
             let canvas = document.getElementsByTagName("canvas")[0];
             let video = document.getElementsByTagName("video")[0];
             // app(canvas,video).playVideo('video/sv2.mp4')
-            app(canvas,video).chooseDevice();
+            let myApp = app(canvas,video);
+            // myApp.chooseDevice();
             
             
 
