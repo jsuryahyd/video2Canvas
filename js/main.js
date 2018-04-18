@@ -54,6 +54,7 @@ const app = function(canvas, video) {
             console.log(mediaDevice)
             return mediaDevice.kind == "videoinput";
           });
+          console.log(videoInputs.length)
         switch (videoInputs.length) {
           case 0:
             return alert("You seem to not have an input device");
@@ -66,6 +67,9 @@ const app = function(canvas, video) {
             deviceSelector.innerHTML += ` <option value="${videoInputs[0].deviceId}" >${videoInputs[0].label}</option>
             <option value="${videoInputs[1].deviceId}" >${videoInputs[1].label}</option>`
             break;
+          default:
+          toggleModal("show");
+            deviceSelector.innerHTML = '<option selected value="0">Camera</option>'+videoInputs.map(cam=>{return ` <option value="${cam.deviceId}" >${cam.label}</option>`}).join('');
         }
       },
       e => console.log("error :", e)
