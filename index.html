@@ -17,6 +17,7 @@
             <div class="columns">
                 <div class="column">
                     <video  controls id="inputVideo" ></video>
+                    
                 </div>
                 <div class="column">
                     <canvas id="canvasOuput" ></canvas>
@@ -26,6 +27,15 @@
                 <div class="column" ><button class="button is-primary is-inverted" id="initApp">Start Video</button>&nbsp;<button class="button is-primary is-inverted" id="takePictureBtn">Take Picture</button></div>
                 <div class="column"></div>
                 <div class="column"></div>
+            </div>
+
+            <div class="columns">
+                <div class="column">
+                    <img  alt="" hidden id="image">
+                </div>
+                <div class="column">
+                    <canvas id="panoramaCanvas" ></canvas>
+                </div>
             </div>
         </div>
 
@@ -50,43 +60,74 @@
                 </div>
                 <button class="modal-close is-large" aria-label="close" onclick="this.parentElement.classList.remove('is-large')"></button>
               </div>
-        <!-- https://github.com/auduno/clmtrackr -->
-        <script src="js/clmtrackr.min.js"></script>
-        <script src="js/main.js"></script>
+<script src="js/seriously.js"></script>
+<script src="js/seriously.edge.js"></script>
+<script src="js/seriously.panorama.js"></script>
+<script src="js/seriously.vibrance.js"></script>
+<script src="js/main.js"></script>
         <script>
             let canvas = document.getElementsByTagName("canvas")[0];
             let video = document.getElementsByTagName("video")[0];
-            // app(canvas,video).playVideo('video/sv2.mp4')
-            let myApp = app(canvas,video);
-            initApp.onclick =  myApp.chooseDevice;
-            
+            // // app(canvas,video).playVideo('video/sv2.mp4')
+            // let myApp = app(canvas,video);
+            // initApp.onclick =  myApp.chooseDevice;
+            let seriously = new Seriously();
+            let videoSource;
+            let canvasTarget;
+            let edgeEffect;
+            video.onloadedmetadata = ()=>{
+               initEdgeEffect();
+            }
+
+            function initEdgeEffect(){
+                video.width = canvas.width = video.offsetWidth;
+                video.height = canvas.height = video.offsetHeight;   
+                
+                videoSource = seriously.source('#inputVideo');
+                canvasTarget = seriously.target('#canvasOuput');
+                
+                video.play();
+                edgeEffect = seriously.effect('edge');
+                // edgeEffect.mode = 'frei-chen'
+                edgeEffect.source = videoSource;
+                // canvasTarget.source = videoSource;
+                canvasTarget.source = edgeEffect;            
+                seriously.go();
+            }
+
+            video.onended = function(){
+                edgeEffect.destroy();
+                canvasTarget.destroy();
+                edgeEffect = canvasTarget =  null;
+            }
+
+            // video.src = "video/sv2.mp4";
+            let img = document.querySelector('#image');
+            let imgOutput = document.querySelector('#panoramaCanvas')
+            img.onload = ()=>{
+                imgOutput.style.width = '100%';
+                imgOutput.style.height = imgOutput.offsetWidth * img.height / img.width}
+            img.src = "img/4.jpg"
+            let imgSrc = seriously.source('#image');
+            let output  = seriously.target('#panoramaCanvas');
             
 
-    //     let ctracker;
-    //     ctracker = new clm.tracker();
-    //     video.onloadedmetadata = () => {
-    //         video.width = canvas.width = video.offsetWidth;
-    //         video.height = canvas.height = video.offsetHeight;
-    //         ctracker.init();
-    //         ctracker.start(video);
-    //     };
-    //     video.onplay = () => {
-    //     drawLoop();
-        
-    //     }; 
-    //     video.src = 'video/sv2.mp4';
-    //     // video.play();
-    //    let ctx = canvas.getContext('2d');
-    //    function drawLoop(t){
-    //        console.log(t)
-    //        if(!video.paused) {
-    //        requestAnimationFrame(drawLoop);
-    //        let positions = ctracker.getCurrentPosition();
-    //        ctx.clearRect(0,0,canvas.width,canvas.height);
-    //        ctx.drawImage(video,0,0,canvas.width,canvas.height)
-    //        ctracker.draw(canvas)
-    //        }
-    //    }
+            let vibrance = seriously.effect('vibrance');
+            vibrance.source = imgSrc;
+
+            let panorama = seriously.effect('panorama');
+            panorama.source = vibrance;
+            panorama.fov = 150;
+            output.source = panorama;
+            seriously.go(function (now) {
+                // console.log(now)
+				panorama.yaw = (now / 100) % 360;
+				//panorama.pitch = Math.sin(Date.now() / 2000) * 10;
+			});
+		
+
+            
+
         </script>
 
 </body>
