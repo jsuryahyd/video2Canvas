@@ -1,93 +1,122 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Document</title>
-<link rel="stylesheet" href="css/bulma.css">
-<link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/bulma.css">
+    <link rel="stylesheet" href="css/style.css">
 </head>
+
 <body>
     <nav class="nav">
-        
-    </nav>
-        <div class="container " >
 
-            <div class="columns">
-                <div class="column">
-                    <video  controls id="inputVideo" ></video>
-                </div>
-                <div class="column">
-                    <canvas id="canvasOuput" ></canvas>
-                </div>
+    </nav>
+    <div class="container ">
+
+        <div class="columns">
+            <div class="column">
+                <video controls id="inputVideo"></video>
             </div>
-            <div class="columns">
-                <div class="column" ><button class="button is-primary is-inverted" id="initApp">Start Video</button>&nbsp;<button class="button is-primary is-inverted" id="takePictureBtn">Take Picture</button></div>
-                <div class="column"></div>
-                <div class="column"></div>
+            <div class="column">
+                <canvas id="canvasOuput"></canvas>
             </div>
         </div>
+        <div class="columns">
+            <div class="column">
+                <button class="button is-primary is-inverted" id="initApp">Start Video</button>&nbsp;
+                <button class="button is-primary is-inverted" id="takePictureBtn">Take Picture</button>
+            </div>
+            <div class="column"></div>
+            <div class="column"></div>
+        </div>
+    </div>
 
 
 
 
-        <!-- modals... etc. -->
-        <div class="modal" id="modal">
-                <div class="modal-background"></div>
-                <div class="modal-content">
-                  <!-- Any other Bulma elements you want -->
-                  <div class="control has-icons-left">
-                        <div class="select is-large">
-                          <select id="deviceSelector">
-                            <option selected value="0">Camera</option>
-                          </select>
-                        </div>
-                        <span class="icon is-large is-left">
-                          <i class="fas fa-globe"></i>
-                        </span>
-                      </div>
+    <!-- modals... etc. -->
+    <div class="modal" id="modal">
+        <div class="modal-background"></div>
+        <div class="modal-content">
+            <!-- Any other Bulma elements you want -->
+            <div class="control has-icons-left">
+                <div class="select is-large">
+                    <select id="deviceSelector">
+                        <option selected value="0">Camera</option>
+                    </select>
                 </div>
-                <button class="modal-close is-large" aria-label="close" onclick="this.parentElement.classList.remove('is-large')"></button>
-              </div>
-        <!-- https://github.com/auduno/clmtrackr -->
-        <script src="js/clmtrackr.min.js"></script>
-        <script src="js/main.js"></script>
-        <script>
-            let canvas = document.getElementsByTagName("canvas")[0];
-            let video = document.getElementsByTagName("video")[0];
+                <span class="icon is-large is-left">
+                    <i class="fas fa-globe"></i>
+                </span>
+            </div>
+        </div>
+        <button class="modal-close is-large" aria-label="close" onclick="this.parentElement.classList.remove('is-large')"></button>
+    </div>
+    <!-- https://github.com/auduno/clmtrackr -->
+    <script src="js/clmtrackr.min.js"></script>
+    <script src="js/opencv.js">
+    </script>
+    <script src="js/main.js"></script>
+    <script>
+            // let canvas = document.getElementsByTagName("canvas")[0];
+            // let video = document.getElementsByTagName("video")[0];
             // app(canvas,video).playVideo('video/sv2.mp4')
-            let myApp = app(canvas,video);
-            initApp.onclick =  myApp.chooseDevice;
-            
-            
+            // let myApp = app(canvas,video);
+            // initApp.onclick =  myApp.chooseDevice;
 
-    //     let ctracker;
-    //     ctracker = new clm.tracker();
-    //     video.onloadedmetadata = () => {
-    //         video.width = canvas.width = video.offsetWidth;
-    //         video.height = canvas.height = video.offsetHeight;
-    //         ctracker.init();
-    //         ctracker.start(video);
-    //     };
-    //     video.onplay = () => {
-    //     drawLoop();
+
+
+    </script>
+    <script>
+        let video = document.getElementById('inputVideo');
+        let canvas = document.getElementById('canvasOuput');
+
+        let cap
+        let frame;
+        let fgmask;
+        let fgbg;
+        let streaming;
+        const FPS = 30;
+
+        video.src = "video/sv2.mp4";
+        video.onloadedmetadata = () => {
+            video.width = canvas.width = video.offsetWidth;
+            video.height = canvas.height = video.offsetHeight;
+            cap = new cv.VideoCapture(video);
+            streaming = true;
+            frame = new cv.Mat(video.height, video.width, cv.CV_8UC4);
+            fgmask = new cv.Mat(video.height, video.width, cv.CV_8UC1);
+            fgbg = new cv.BackgroundSubtractorMOG2(500, 16, true);
+            video.play();
+            processVideo();
+        };
+
+        function processVideo() {
+            try {
+                if (!streaming) {
+                    // clean and stop.
+                    frame.delete(); fgmask.delete(); fgbg.delete();
+                    return;
+                }
+                let begin = Date.now();
+                // start processing.
+                cap.read(frame);
+                fgbg.apply(frame, fgmask);
+                cv.imshow('canvasOuput', fgmask);
+                // schedule the next one.
+                let delay = 1000 / FPS - (Date.now() - begin);
+                setTimeout(processVideo, delay);
+            } catch (err) {
+                // utils.printError(err);
+                console.log(err)
+            }
+        };
         
-    //     }; 
-    //     video.src = 'video/sv2.mp4';
-    //     // video.play();
-    //    let ctx = canvas.getContext('2d');
-    //    function drawLoop(t){
-    //        console.log(t)
-    //        if(!video.paused) {
-    //        requestAnimationFrame(drawLoop);
-    //        let positions = ctracker.getCurrentPosition();
-    //        ctx.clearRect(0,0,canvas.width,canvas.height);
-    //        ctx.drawImage(video,0,0,canvas.width,canvas.height)
-    //        ctracker.draw(canvas)
-    //        }
-    //    }
-        </script>
+    </script>
 
 </body>
+
 </html>
